@@ -13,7 +13,10 @@ templates = Jinja2Templates(directory="templates")
 
 game = TicTacToe()
 agent1 = QLearningAgent(
-    alpha=0.1, gamma=0.9, epsilon=0.1, pre_trained_q_table="q_table_ubuntu_agent_move_first.pkl"
+    alpha=0.1,
+    gamma=0.9,
+    epsilon=0.1,
+    pre_trained_q_table="q_table_ubuntu_agent_move_first.pkl",
 )
 agent2 = QLearningAgent(
     alpha=0.1,

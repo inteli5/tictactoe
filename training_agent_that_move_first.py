@@ -4,6 +4,7 @@ import random
 
 from game_and_agent import QLearningAgent, TicTacToe
 
+
 def play_game_agent_move_first(agent: QLearningAgent, episodes: int = 10000) -> None:
     """
     Play multiple games to train the Q-learning agent with a random opponent.
@@ -40,7 +41,7 @@ def play_game_agent_move_first(agent: QLearningAgent, episodes: int = 10000) -> 
 
         # Continue playing until a player wins or the game is a draw
         while not (
-                game.check_win(player1) or game.check_win(player2) or game.check_draw()
+            game.check_win(player1) or game.check_win(player2) or game.check_draw()
         ):
             # Get the current state key
             valid_actions = game.get_valid_actions()
@@ -97,7 +98,7 @@ def play_game_agent_move_first(agent: QLearningAgent, episodes: int = 10000) -> 
 
             if reward in [-1, 0, 1]:
                 average_reward = (
-                        0.9999 * average_reward + (1 - 0.9999) * reward
+                    0.9999 * average_reward + (1 - 0.9999) * reward
                 )  # /(1-0.9999**(episode+1))
 
 

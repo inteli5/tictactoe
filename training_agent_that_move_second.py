@@ -1,9 +1,9 @@
-
 import random
 from time import perf_counter
 import pickle
 
 from game_and_agent import QLearningAgent, TicTacToe
+
 
 def play_game_agent_move_second(
     agent: QLearningAgent, agent1: QLearningAgent, episodes: int = 10000
@@ -130,7 +130,10 @@ if __name__ == "__main__":
     # q_table_ubuntu.pkl is a pre-trained q_table when agent1 move first. In the q_table agent is 1, opponent is 2.
     # the AI opponent can not always takes the optimal move, because if so, the our agent can not learn from the opponent's sub-optimal moves.
     agent1 = QLearningAgent(
-        alpha=0.1, gamma=0.9, epsilon=0.5, pre_trained_q_table="q_table_ubuntu_agent_move_first.pkl"
+        alpha=0.1,
+        gamma=0.9,
+        epsilon=0.5,
+        pre_trained_q_table="q_table_ubuntu_agent_move_first.pkl",
     )
 
     # Train the agent by playing the game

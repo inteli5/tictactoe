@@ -6,7 +6,7 @@ from collections import Counter
 
 
 def play_game_to_test_first_mover_agent(
-        agent: QLearningAgent, agent1: QLearningAgent, episodes: int = 10000
+    agent: QLearningAgent, agent1: QLearningAgent, episodes: int = 10000
 ) -> List[int]:
     """
     Play multiple games to train the Q-learning agent.
@@ -42,7 +42,7 @@ def play_game_to_test_first_mover_agent(
 
         # Continue playing until a player wins or the game is a draw
         while not (
-                game.check_win(player1) or game.check_win(player2) or game.check_draw()
+            game.check_win(player1) or game.check_win(player2) or game.check_draw()
         ):
             valid_actions = game.get_valid_actions()
 
@@ -90,7 +90,7 @@ def play_game_to_test_first_mover_agent(
 
             if reward in [-1, 0, 1]:
                 average_reward = (
-                        0.9999 * average_reward + (1 - 0.9999) * reward
+                    0.9999 * average_reward + (1 - 0.9999) * reward
                 )  # /(1-0.9999**(episode+1))
                 if reward == -1:
                     raise Exception("loss!")
@@ -122,4 +122,6 @@ if __name__ == "__main__":
     if -1 not in set(game_record):
         counter = Counter(game_record)
 
-        print(f"Among the {EP} games played, the first mover agent won {counter[1]} games and draw {counter[0]} games.")
+        print(
+            f"Among the {EP} games played, the first mover agent won {counter[1]} games and draw {counter[0]} games."
+        )

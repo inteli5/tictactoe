@@ -7,7 +7,7 @@ from time import perf_counter
 
 
 def play_game_to_test_second_mover_agent(
-        agent: QLearningAgent, agent1: QLearningAgent, episodes: int = 10000
+    agent: QLearningAgent, agent1: QLearningAgent, episodes: int = 10000
 ) -> List[int]:
     """
     Play multiple games to test an agent who move second.
@@ -51,7 +51,7 @@ def play_game_to_test_second_mover_agent(
 
         # Continue playing until a player wins or the game is a draw
         while not (
-                game.check_win(player1) or game.check_win(player2) or game.check_draw()
+            game.check_win(player1) or game.check_win(player2) or game.check_draw()
         ):
             # Get the current state key
             state_key = game.get_state_key()
@@ -129,8 +129,10 @@ if __name__ == "__main__":
 
     # Train the agent by playing the game
     EP = 50000
-    game_record=play_game_to_test_second_mover_agent(agent, agent1, episodes=EP)
+    game_record = play_game_to_test_second_mover_agent(agent, agent1, episodes=EP)
     if -1 not in set(game_record):
         counter = Counter(game_record)
 
-        print(f"Among the {EP} games played, the second mover agent won {counter[1]} games and draw {counter[0]} games.")
+        print(
+            f"Among the {EP} games played, the second mover agent won {counter[1]} games and draw {counter[0]} games."
+        )
