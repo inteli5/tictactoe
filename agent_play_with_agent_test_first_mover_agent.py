@@ -76,7 +76,7 @@ def play_game_to_test_first_mover_agent(
                     )
 
                     agent1_action = agent1.choose_action(
-                        agent1_state_key, game.get_valid_actions()
+                        agent1_state_key, game.get_valid_actions(), is_learning=True
                     )
                     game.make_move(*agent1_action, player2)
 
