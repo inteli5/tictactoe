@@ -79,19 +79,23 @@ The file 'game_and_agent.py' is the game board and reinforcement learning agent 
 For example, here is part of the second mover agent q-table.
 
 {('000020000', (0, 1)): -0.6744205096465703,
+
  ('000020000', (1, 0)): -0.6744205096465703,
+
  ('000020000', (2, 1)): -0.6744205096465703,
+
  ('000020000', (1, 2)): -0.6744205096465703,
+
  ('000020000', (0, 0)): -0.09080339631767263,
+
  ('000020000', (2, 0)): -0.09080339631767263,
+
  ('000020000', (2, 2)): -0.09080339631767263,
+
  ('000020000', (0, 2)): -0.09080339631767263}
 
-'000020000' means that the opponent (always is 2) move first and place in the center of the board.
-You can see that the first four actions are the four edge boxes. They share the same q-value.
-The next four actions are the four corner boxes. 
-
-If the AI agent chooses the four edges, it will be sure to lose.
+'000020000' is the board state. It means that the opponent (always is 2) move first and place in the center of the board. Tuple like (0, 1) is the action. You can see that the first four actions are the four edges. They share the same q-value. The next four actions are the four corners. 
+If the AI agent chooses the four edges, it will be sure to lose. So they share a lower q-value.
 if the AI agent chooses the four corners, it can be a draw.
 
 ## License
