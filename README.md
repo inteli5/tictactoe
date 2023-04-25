@@ -29,6 +29,7 @@ python -m pip install -r requirements.txt
 
 ### Web App
 
+In the root directory of the project,
 ```bash
 python tictactoe_webapp.py
 ```
