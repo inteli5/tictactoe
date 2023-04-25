@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <style>
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .grid, h3, p {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            border: 1px solid black;
+            text-align: center;
+            font-size: 2em;
+            line-height: 100px;
+            cursor: pointer;
+        }
+        #msg {
+            background-color: #ffe4e1;
+            color: #8b0000;
+            border: 2px solid #8b0000;
+            padding: 5px;
+            display: none;
+        }
+        #choosePlayer button {
+            background-color: #354c80;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            margin: 10px;
+        }
+    </style>
+    <script>
+        async function makeMove(x, y) {
+
+
+            // If the game is in terminal state, we let the player click the board and display a alert, then we init the board and start a new game. 
+            if (gameState.message === 'AI wins!' || gameState.message === 'It is a draw!' || gameState.message === 'You win!') {
+            alert(gameState.message);
+            init_board(gameState.player_move_first)
+
+            } else {
+            const response = await fetch('/make_move/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({state: gameState, x: x, y: y})
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                gameState = data;
+                drawBoard();
+                if (gameState.message!='') {
+                    
+                    const msgElement = document.getElementById("msg");
+
+                    if (gameState.message === "Invalid Move!") {
+                        msgElement.innerHTML = gameState.message
+                    }
+                    else {
+                    msgElement.innerHTML = gameState.message+ " " + "Click the board to start a new game."
+                    }
+                    msgElement.style.display="inline-block"
+                }
+                else {
+                    document.getElementById("msg").style.display="none"
+                }
+
+            } else {
+                console.error('Invalid move or request error.');
+            }
+            }
+        }
+
+        function drawBoard() {
+            const grid = document.querySelector('.grid');
+            grid.innerHTML = '';
+            gameState.board.forEach((row, x) => {
+                row.forEach((cell, y) => {
+                    const div = document.createElement('div');
+                    div.className = 'cell';
+                    div.textContent = cell;
+                    div.onclick = () => makeMove(x, y);
+                    grid.appendChild(div);
+                });
+            });
+        }
+
+        let gameState = {
+            board: [['', '', ''], ['', '', ''], ['', '', '']],
+            player_move_first: 'X',
+            message: '',
+        };
+        // Generate a random row and column index
+        let row = Math.floor(Math.random() * gameState.board.length);
+        let col = Math.floor(Math.random() * gameState.board[0].length);
+
+        // Set the random element to 'X'
+        gameState.board[row][col] = 'X';
+
+        function init_board(player) {
+
+            if (player === 'X') {
+                gameState = {
+                board: [['', '', ''], ['', '', ''], ['', '', '']],
+                player_move_first: 'X',
+                message: '',
+                };
+                row = Math.floor(Math.random() * gameState.board.length);
+                col = Math.floor(Math.random() * gameState.board[0].length);
+                gameState.board[row][col] = 'X';
+                document.getElementById("msg").style.display="none"
+            }
+            else if (player === 'O'){
+                gameState = {
+                board: [['', '', ''], ['', '', ''], ['', '', '']],
+                player_move_first: 'O',
+                message: '',
+                };
+
+                document.getElementById("msg").style.display="none"
+
+            }
+            drawBoard()
+
+        }
+
+        // function handlePlayerChoice(player) {
+        //     init_board(player)
+
+        // }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            drawBoard();
+            const playerXButton = document.getElementById('playerX');
+            const playerOButton = document.getElementById('playerO');
+            
+            playerXButton.addEventListener('click', () => init_board('X'));
+            playerOButton.addEventListener('click', () => init_board('O'));
+        });
+    </script>
+</head>
+<body>
+    <h3>The AI Tic Tac Toe Game</h3>
+
+    <div id="choosePlayer">
+        <button id="playerO">You (O) First</button>
+        <button id="playerX">AI (X) First</button>
+    </div>
+
+    <p id="msg"></p>
+
+    <div class="grid"></div>
+</body>
+</html>
