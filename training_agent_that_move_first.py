@@ -103,7 +103,7 @@ def play_game_agent_move_first(agent: QLearningAgent, episodes: int = 10000) -> 
 
 
 if __name__ == "__main__":
-    agent = QLearningAgent(alpha=0.1, gamma=1, epsilon=0.1)
+    agent = QLearningAgent()
 
     # Train the agent by playing the game
     EP = 1000000
