@@ -250,16 +250,16 @@ class QLearningAgent:
         [[2 0 0]
         [0 0 0]
         [0 0 0]]
-        only has 4 unique states among the 8 transformations.
-        However, if the action is (0,1)
-        for the board only, for example, identity and flip_135 is same.
-        but for the state-action pair, we should update the q_table of both ((200000000,(0,1)) and ((200000000,(1,0)).
-        Actualy, we need to update 8 state-action pair in this example of state-action pair ((200000000,(0,1)).
-        But if the action is (1,1), we only need to update 4 state-action pair.
-        It turns out we should decide how many non-duplicate states by the board of the **next_state_key**
+        only has 4 unique states among the 8 transformations. However, if the action is (0,1) for the
+        board only, for example, the transformation 'identity' and 'flip_135' is same. However, for the state-action
+        pair, we should update the q_table of both ((200000000,(0,1)) and ((200000000,(1,0)). Actually, we need to
+        update 8 state-action pair in this example of state-action pair ((200000000,(0,1)). But if the action is (1,
+        1), we only need to update 4 state-action pair. It turns out we should decide how many non-duplicate states
+        by the board of the **next_state_key**.
 
         Parameters:
         state_key (str): A string representing the current state of the board.
+        action (Tuple[int, int]): a tuple representing the action to be taken.
 
         Returns:
         List[Tuple[str, Tuple[int, int]]]: A list of unique symmetrical state-action pair.
@@ -288,23 +288,23 @@ class QLearningAgent:
             # [6 7 8]]
             ("rotate", 1): np.rot90(board),  # 90 degrees counter-clockwise rotation
             # e.g.
-            # [[0 1 2]
-            # [3 4 5]
-            # [6 7 8]]
+            # [[2 5 8]
+            # [1 4 7]
+            # [0 3 6]]
             ("rotate", 2): np.rot90(board, 2),  # 180 degrees counter-clockwise rotation
             ("rotate", 3): np.rot90(board, 3),  # 270 degrees counter-clockwise rotation
             ("flip_lr", 1): np.fliplr(board),  # Left-right flip
             ("flip_ud", 1): np.flipud(board),  # Up-down flip
             ("flip_45", 1): np.fliplr(
                 np.rot90(board)
-            ),  # Flip about the 45-degree line (axillury diagnal axis of the matrix)
+            ),  # Flip about the 45-degree line (axillary diagonal axis of the matrix)
             # e.g.
             # [[8 5 2]
             #  [7 4 1]
             #  [6 3 0]]
             ("flip_135", 1): np.fliplr(
                 np.rot90(board, 3)
-            )  # Flip about the 135-degree line (main diagnal axis of the matrix)
+            )  # Flip about the 135-degree line (main diagonal axis of the matrix)
             # e.g.
             #  [[0 3 6]
             #  [1 4 7]
@@ -381,7 +381,7 @@ class QLearningAgent:
         state_key (str): A string representing the state of the game.
         valid_actions (List[Tuple[int, int]]): A list of valid actions.
         is_learning (bool): A flag indicating whether the agent is in learning mode or not (default: True).
-                            If not, the agent is playing with a human opponent and will not explore.
+                            If not, the agent will not explore.
 
         Returns:
         Tuple[int, int]: The chosen action.

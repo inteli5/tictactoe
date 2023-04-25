@@ -58,10 +58,10 @@
         async function makeMove(x, y) {
 
 
-            // If the game is in terminal state, we let the player click the board and display a alert, then we init the board and start a new game. 
+            // If the game is in terminal state, we let the player click the board and display an alert, then we initialize the board and start a new game.
             if (gameState.message === 'AI wins!' || gameState.message === 'It is a draw!' || gameState.message === 'You win!') {
             alert(gameState.message);
-            init_board(gameState.player_move_first)
+            init_board(gameState.player_who_move_first)
 
             } else {
             const response = await fetch('/make_move/', {
@@ -115,7 +115,7 @@
 
         let gameState = {
             board: [['', '', ''], ['', '', ''], ['', '', '']],
-            player_move_first: 'X',
+            player_who_move_first: 'X',
             message: '',
         };
         // Generate a random row and column index
@@ -130,7 +130,7 @@
             if (player === 'X') {
                 gameState = {
                 board: [['', '', ''], ['', '', ''], ['', '', '']],
-                player_move_first: 'X',
+                player_who_move_first: 'X',
                 message: '',
                 };
                 row = Math.floor(Math.random() * gameState.board.length);
@@ -141,7 +141,7 @@
             else if (player === 'O'){
                 gameState = {
                 board: [['', '', ''], ['', '', ''], ['', '', '']],
-                player_move_first: 'O',
+                player_who_move_first: 'O',
                 message: '',
                 };
 
