@@ -81,12 +81,12 @@ async def make_move(item: Item):
         return state
 
     agent_state_key: str = game.get_state_key()
-    agent_x, agent_y = agent.choose_action(
-        agent_state_key, game.get_valid_actions(), is_learning=False
+    x, y = agent.choose_action(
+        agent_state_key, game.get_valid_actions(), is_learning=True
     )
 
-    state.board[agent_x][agent_y] = "X"
-    game.make_move(agent_x, agent_y, player_agent)
+    state.board[x][y] = "X"
+    game.make_move(x, y, player_agent)
 
     if game.check_win(player_agent):
         state.message = "AI wins!"
@@ -97,4 +97,4 @@ async def make_move(item: Item):
 
 
 if __name__ == "__main__":
-    uvicorn.run("tictactoe_web:app", host="192.168.86.57", port=8000, reload=True)
+    uvicorn.run("tictactoe_webapp:app", host="0.0.0.0", port=8000, reload=True)
