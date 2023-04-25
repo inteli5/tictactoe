@@ -242,7 +242,7 @@ class QLearningAgent:
 
     def get_symmetrical_state_action_pairs(
         self, state_key: str, action: Tuple[int, int]
-    ) -> List[Tuple[str, Tuple[str, int]]]:
+    ) -> List[Tuple[str, Tuple[int, int]]]:
         """
         Get all symmetrical state-action paris for a given state-action pair.
 
@@ -343,10 +343,10 @@ class QLearningAgent:
             ("flip_ud", 1): np.flipud(board),  # Up-down flip
             ("flip_45", 1): np.fliplr(
                 np.rot90(board)
-            ),  # Flip about the 45-degree line (axillury diagnal axis of the matrix)
+            ),  # Flip about the 45-degree line (axillary diagonal axis of the matrix)
             ("flip_135", 1): np.fliplr(
                 np.rot90(board, 3)
-            ),  # Flip about the 135-degree line (main diagnal axis of the matrix)
+            ),  # Flip about the 135-degree line (main diagonal axis of the matrix)
         }
 
         symmetrical_state_actions = []
@@ -390,8 +390,8 @@ class QLearningAgent:
         if is_learning and random.random() < self.epsilon:
             return random.choice(valid_actions)
 
-        # all the symmetric states is actually one state. We don't need to choose the max_q_value among the symmetric states, because they should
-        # have the same q_values.
+        # all the symmetric states is actually one state. We don't need to choose the max_q_value among the symmetric
+        # states, because they should share the same q_values.
 
         q_values = [self.get_q_value(state_key, action) for action in valid_actions]
 
@@ -432,8 +432,8 @@ class QLearningAgent:
         # The usual update rule is
         # Q(s, a) ← Q(s, a) + α [r + γ max Q(s', a') - Q(s, a)]
 
-        # If state_key is the terminal state (win, lose, or draw), the next_valid_actions will be [], so the next_max_q_value is 0 (by definition of
-        # the terminal states values). Then, We update the Q value by
+        # If state_key is the terminal state (win, lose, or draw), the next_valid_actions will be [],
+        # so the next_max_q_value is 0 (by definition of the terminal states values). Then, We update the Q value by
         # Q(s, a) ← Q(s, a) + α[r - Q(s, a)]
         next_max_q_value = (
             max(
@@ -454,5 +454,5 @@ class QLearningAgent:
             state_key, action
         )
 
-        for sym_state_key, sys_action in symmetrical_states_and_actions:
-            self.set_q_value(sym_state_key, sys_action, new_q_value)
+        for sym_state_key, sym_action in symmetrical_states_and_actions:
+            self.set_q_value(sym_state_key, sym_action, new_q_value)
