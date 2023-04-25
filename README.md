@@ -1,6 +1,6 @@
 # Tic Tac Toe with FastAPI and Reinforcement learning
 
-A project of the Tic Tac Toe game with FastAPI and Reinforcement learning. The code features learning by updating symmetrical state-action q-value.
+A project of the Tic Tac Toe game with FastAPI web app and Reinforcement learning . The code features learning by updating symmetrical state-action q-value.
 
 ## Installation
 
@@ -29,6 +29,7 @@ python -m pip install -r requirements.txt
 
 ### Web App
 
+In the root directory of the project,
 ```bash
 python tictactoe_webapp.py
 ```
