@@ -124,14 +124,12 @@ def play_game_agent_move_second(
 
 if __name__ == "__main__":
     # The agent to be trained
-    agent = QLearningAgent(alpha=0.1, gamma=1, epsilon=0.1)
+    agent = QLearningAgent()
 
-    # agent1 is the AI opponent. agent1 will always move first.
-    # q_table_ubuntu.pkl is a pre-trained q_table when agent1 move first. In the q_table agent is 1, opponent is 2.
-    # the AI opponent can not always takes the optimal move, because if so, the our agent can not learn from the opponent's sub-optimal moves.
+    # agent1 is the AI opponent. agent1 will always move first. q_table_ubuntu.pkl is a pre-trained q_table when
+    # agent1 move first. In the q_table agent is 1, opponent is 2. the AI opponent can not always take the optimal
+    # move, because if so, the agent can not learn from the opponent's suboptimal moves.
     agent1 = QLearningAgent(
-        alpha=0.1,
-        gamma=0.9,
         epsilon=0.5,
         pre_trained_q_table="q_table_ubuntu_agent_move_first.pkl",
     )

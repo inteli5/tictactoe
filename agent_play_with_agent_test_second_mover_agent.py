@@ -112,18 +112,12 @@ if __name__ == "__main__":
     # agent is the agent we are testing. Whenever it loses a game, we will issue an Exception. agent will move second.
 
     agent = QLearningAgent(
-        alpha=0.1,
-        gamma=1,
-        epsilon=0.1,
         pre_trained_q_table="q_table_ubuntu_agent_move_second.pkl",
     )
 
     # agent1 is the AI opponent. agent1 will always move first.
 
     agent1 = QLearningAgent(
-        alpha=0.1,
-        gamma=0.9,
-        epsilon=0.1,
         pre_trained_q_table="q_table_ubuntu_agent_move_first.pkl",
     )
 
