@@ -35,6 +35,7 @@ class GameState(BaseModel):
     """
     Game state model representing the current state of the Tic Tac Toe game.
     """
+
     board: List[List[str]]
     player_who_move_first: str  # could be "X" or "O", "X" means AI.
     message: str
@@ -44,6 +45,7 @@ class Item(BaseModel):
     """
     Item model containing the game state and the next move.
     """
+
     state: GameState
     x: int
     y: int
