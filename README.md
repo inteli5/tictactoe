@@ -1,6 +1,6 @@
 # Tic Tac Toe with FastAPI and Reinforcement learning
 
-A project of the Tic Tac Toe game with FastAPI and Reinforcement learning.
+A project of the Tic Tac Toe game with FastAPI and Reinforcement learning. The code features learning by updating symmetrical state-action q-value.
 
 ## Installation
 
@@ -54,15 +54,25 @@ python training_agent_that_move_second.py
 This program requires the pkl file 'q_table_ubuntu_agent_move_first.pkl'.
 It trains a second mover agent by playing with an AI opponent who use the above q-table.
 
-After training your own agent, you can test it by running
+After training your own agent, you can test it by running the following codes that let the AI agent plays with another AI agent.
+To test the first mover agent, you can run,
 ```bash
 python agent_play_with_agent_test_first_mover_agent.py
 ```
-or 
+For testing second mover agent, you can run,
 ```bash
 python agent_play_with_agent_test_second_mover_agent.py
 ```
 If you set the parameters well, your agents should never lose. 
+In the above test, the opponent agent (the agent not being tested) will not always follow the optimal move. It has 10% of change to take a random move.
+If both agent follow the optimal moves, they will always draw.
+You can try this by modify the following code. For the 'agent_play_with_agent_test_first_mover_agent.py', line 78
+```python
+agent1_action = agent1.choose_action(
+    agent1_state_key, game.get_valid_actions(), is_learning=False)
+```
+Change the is_learning flag to False. 
+For agent_play_with_agent_test_second_mover_agent.py, you can make similar changes.
 
 The file 'game_and_agent.py' is the game board and reinforcement learning agent class. It accelerates the learning by updating not only the current state-action but also the symmetrical state-action pairs.
 
