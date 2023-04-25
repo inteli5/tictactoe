@@ -79,12 +79,19 @@ The file 'game_and_agent.py' is the game board and reinforcement learning agent 
 For example, here is part of the second mover agent q-table.
 
 {('000020000', (0, 1)): -0.6744205096465703,
+
  ('000020000', (1, 0)): -0.6744205096465703,
+
  ('000020000', (2, 1)): -0.6744205096465703,
+
  ('000020000', (1, 2)): -0.6744205096465703,
+
  ('000020000', (0, 0)): -0.09080339631767263,
+
  ('000020000', (2, 0)): -0.09080339631767263,
+
  ('000020000', (2, 2)): -0.09080339631767263,
+
  ('000020000', (0, 2)): -0.09080339631767263}
 
 '000020000' means that the opponent (always is 2) move first and place in the center of the board.
