@@ -240,68 +240,6 @@ class QLearningAgent:
         """
         self.q_table[(state_key, action)] = value
 
-    # def transform_action(self, action: Tuple[int, int], transformation: Tuple[str, int]) -> Tuple[int, int]:
-
-    #     """
-    #     Transform the given action based on the specified transformation and return the transformed action in the
-    #     transformed  board's coordinates. i.e. original action -> transformed action
-    #     For example, action=(0,1), transformation=('rotate',1), return would be (1,0), rotate (0,1), counter clock-wise by 90 degree.
-
-    #     Parameters:
-    #     action (Tuple[int, int]): A tuple representing the action (row, col) to be transformed.
-    #     transformation (Tuple[str, int]): A tuple containing the operation to be performed ('rotate', 'flip_ud',
-    #                                     'flip_lr', 'flip_45', 'flip_135') and the number of times the operation
-    #                                     should be applied (k). Note: k is only meaningful for 'rotate' (k could be 1,2,3).
-    #                                     For other transformations, k must be 1.
-
-    #     Returns:
-    #     Tuple[int, int]: A tuple representing the transformed action in the original board's coordinates.
-    #     """
-    #     operation, k = transformation
-
-    #     #####################################################################
-    #     # pay attention that the lower right corner is the first quadrant with x>0 and y>0
-    #     # also the **vertical** axis is x, with positive direction pointing down, because x is the row number,
-    #     # so the transformation matrix is different from the often-used math coordinates with +x facing right and +y facing up
-    #     #####################################################################
-
-    #     # Shift action coordinates by -1 to bring them to the range [-1, 1], for the center of the board (1,1), it will be (0,0)
-    #     action = tuple(x - 1 for x in action)
-
-    #     # Reshape action to a 2x1 matrix
-    #     action_matrix = np.array(action).reshape(2, 1)
-    #     transformation_matrix = None
-
-    #     # Apply the appropriate transformation based on the operation
-    #     if operation == 'rotate':
-    #         # Rotation matrix for 90 degrees counter-clockwise rotation
-    #         transformation_matrix = np.array([[0, -1], [1, 0]]) # x'=-y,y'=x
-
-    #     elif operation == 'flip_ud':
-    #         # Reflection matrix for a up-down flip x'=-x, y'=y,
-    #         transformation_matrix = np.array([[-1, 0], [0, 1]])
-
-    #     elif operation == 'flip_lr':
-    #         # Reflection matrix for a left-right mflip x'=x, y'=-y
-    #         transformation_matrix = np.array([[1, 0], [0, -1]])
-
-    #     elif operation == 'flip_45':
-    #         # Reflection matrix for a flip along the 45-degree diagonal, x'=-y, y'=-x
-    #         transformation_matrix = np.array([[0, -1], [-1, 0]])
-
-    #     elif operation == 'flip_135':
-    #         # Reflection matrix for a flip along the 135-degree diagonal x'=y, y'=x
-    #         transformation_matrix = np.array([[0, 1], [1, 0]])
-    #     else:
-    #         # Identity matrix
-    #         transformation_matrix = np.array([[1, 0], [0, 1]])
-
-    #     for _ in range(k):  # Apply rotation k times
-    #         action_matrix = transformation_matrix.dot(action_matrix)
-
-    #     # Shift action coordinates back to the range [0, 2] and return as a tuple
-    #     return tuple(x + 1 for x in tuple(action_matrix.flatten()))
-
     def get_symmetrical_state_action_pairs(
         self, state_key: str, action: Tuple[int, int]
     ) -> List[Tuple[str, Tuple[str, int]]]:
