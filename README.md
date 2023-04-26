@@ -38,6 +38,7 @@ Then you can open a web browser and input the URL 127.0.0.1:8000
 You are always 'O'. AI is always 'X'.
 By default, AI move first. You can click the button "You (O) first" to move first.
 
+![screenshot](./screenshot.png)
 
 ### Training
 
