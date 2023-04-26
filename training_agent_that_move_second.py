@@ -126,9 +126,10 @@ if __name__ == "__main__":
     # The agent to be trained
     agent = QLearningAgent()
 
-    # agent1 is the AI opponent. agent1 will always move first. q_table_ubuntu.pkl is a pre-trained q_table when
-    # agent1 move first. In the q_table agent is 1, opponent is 2. the AI opponent can not always take the optimal
-    # move, because if so, the agent can not learn from the opponent's suboptimal moves.
+    # agent1 is the AI opponent. agent1 will always move first. q_table_ubuntu_agent_move_first.pkl is a pre-trained
+    # q_table for the first mover agent. The opponent agent can not always take
+    # the optimal move, because if so, the agent can not learn from the opponent's suboptimal moves and could make wrong
+    # move in the unseen states.
     agent1 = QLearningAgent(
         epsilon=0.5,
         pre_trained_q_table="q_table_ubuntu_agent_move_first.pkl",

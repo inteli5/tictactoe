@@ -246,16 +246,16 @@ class QLearningAgent:
         """
         Get all symmetrical state-action paris for a given state-action pair.
 
-        In before, we decide how many non-duplicate states by the board of the state_key. For example,
-        [[2 0 0]
-        [0 0 0]
-        [0 0 0]]
-        only has 4 unique states among the 8 transformations. However, if the action is (0,1) for the
-        board only, for example, the transformation 'identity' and 'flip_135' is same. However, for the state-action
-        pair, we should update the q_table of both ((200000000,(0,1)) and ((200000000,(1,0)). Actually, we need to
-        update 8 state-action pair in this example of state-action pair ((200000000,(0,1)). But if the action is (1,
-        1), we only need to update 4 state-action pair. It turns out we should decide how many non-duplicate states
-        by the board of the **next_state_key**.
+        In before, we want to return non-duplicate state-action pair. We used the next_state_key to decide how many
+        non-duplicate state-action pair. But it still has problem.
+        For example,
+        state_key = '010000200'
+        action = (1, 2)
+        The new_state_key '010001200' has axillary diagonal symmetry but the state_key does not have any symmetry.
+        If we use then next_state_key to decide how many non-duplicate state-action pair, the answer is 4.
+        But the correct answer is 8, rather than 4.
+        Our algorithm to drop duplicate seems expensive.
+        So we choose not to drop duplicates, which should be more efficient.
 
         Parameters:
         state_key (str): A string representing the current state of the board.
@@ -311,27 +311,6 @@ class QLearningAgent:
             #  [2 5 8]]
         }
 
-        # Convert the symmetrical states to string representation, because we want to drop duplicates.
-        # ndarray is mutable, so not hashable, so it can not be elements of a set. So we convert them into strings.
-        symmetrical_states_flattened = [
-            (TicTacToe.board_to_state_key(board), transformation)
-            for transformation, board in symmetrical_states_for_next_state_key.items()
-        ]
-
-        unique_state_keys = set(
-            [state_key for state_key, _ in symmetrical_states_flattened]
-        )
-
-        unique_transformations = []
-        unique_state_keys_set = set()
-
-        for state, transformation in symmetrical_states_flattened:
-            if state not in unique_state_keys_set:
-                unique_transformations.append(transformation)
-                unique_state_keys_set.add(state)
-                if len(unique_state_keys_set) == len(unique_state_keys):
-                    break
-
         board = TicTacToe.state_key_to_board(state_key)
 
         symmetrical_states_for_state_key = {
@@ -350,7 +329,7 @@ class QLearningAgent:
         }
 
         symmetrical_state_actions = []
-        for transformation in unique_transformations:
+        for transformation in symmetrical_states_for_state_key.keys():
             this_step_board = symmetrical_states_for_state_key[transformation]
             next_step_board = symmetrical_states_for_next_state_key[transformation]
 
@@ -423,7 +402,8 @@ class QLearningAgent:
         next_state_key (str): A string representing the state of the game after taking the action and the opponent's move.
         next_valid_actions (List[Tuple[int, int]]): A list of valid actions in the next state.
 
-        Note: the next_valid_actions is redundant. It can be derived from next_state_key, but it is convenient to pass them.
+        Note: the next_valid_actions is redundant. It can be derived from next_state_key, but it is convenient to pass it.
+        And it serves as a flag for the terminal state.
         """
 
         current_q_value = self.get_q_value(state_key, action)
