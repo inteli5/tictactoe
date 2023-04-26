@@ -252,7 +252,7 @@ class QLearningAgent:
         state_key = '010000200'
         action = (1, 2)
         The new_state_key '010001200' has axillary diagonal symmetry but the state_key does not have any symmetry.
-        If we use then ext_state_key to decide how many non-duplicate state-action pair, the answer is 4.
+        If we use then next_state_key to decide how many non-duplicate state-action pair, the answer is 4.
         But the correct answer is 8, rather than 4.
         Our algorithm to drop duplicate seems expensive.
         So we choose not to drop duplicates, which should be more efficient.
@@ -402,7 +402,8 @@ class QLearningAgent:
         next_state_key (str): A string representing the state of the game after taking the action and the opponent's move.
         next_valid_actions (List[Tuple[int, int]]): A list of valid actions in the next state.
 
-        Note: the next_valid_actions is redundant. It can be derived from next_state_key, but it is convenient to pass them.
+        Note: the next_valid_actions is redundant. It can be derived from next_state_key, but it is convenient to pass it.
+        And it serves as a flag for the terminal state.
         """
 
         current_q_value = self.get_q_value(state_key, action)
