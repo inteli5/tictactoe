@@ -252,7 +252,7 @@ class QLearningAgent:
         state_key = '010000200'
         action = (1, 2)
         The new_state_key '010001200' has axillary diagonal symmetry but the state_key does not have any symmetry.
-        If we use then next_state_key to decide how many non-duplicate state-action pair, the answer is 4.
+        If we use the next_state_key to decide how many non-duplicate state-action pair, the answer is 4.
         But the correct answer is 8, rather than 4.
         Our algorithm to drop duplicate seems expensive.
         So we choose not to drop duplicates, which should be more efficient.
@@ -262,11 +262,8 @@ class QLearningAgent:
         action (Tuple[int, int]): a tuple representing the action to be taken.
 
         Returns:
-        List[Tuple[str, Tuple[int, int]]]: A list of unique symmetrical state-action pair.
+        List[Tuple[str, Tuple[int, int]]]: A list of symmetrical state-action pair.
         """
-
-        # We will first decide non-duplicate transformations according to the next_state_key
-        # Then we return the non-duplicate state action pair according to the transformation we find in the first step.
 
         # Initialize a temp game object
         game = TicTacToe()
