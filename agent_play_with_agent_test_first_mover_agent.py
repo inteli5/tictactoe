@@ -21,7 +21,7 @@ def play_game_to_test_first_mover_agent(
     average_reward = 0
     game = TicTacToe()
 
-    # Play multiple games to train the Q-learning agent
+    # Play multiple games to test the Q-learning agent
 
     start = perf_counter()
     for episode in range(episodes):
