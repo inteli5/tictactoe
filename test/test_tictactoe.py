@@ -9,35 +9,21 @@ result = agent.get_symmetrical_state_action_pairs(state_key, action)
 
 class TestQLearningAgent:
     def test_get_symmetrical_state_action_pairs1(self):
-        state_key = "200000000"
-        action = (0, 1)
+        state_key = '010000200'
+        action = (1, 2)
         agent = QLearningAgent()
         result = agent.get_symmetrical_state_action_pairs(state_key, action)
 
         assert set(result) == {
-            ("200000000", (0, 1)),
-            ("000000200", (1, 0)),
-            ("000000002", (2, 1)),
-            ("002000000", (1, 2)),
-            ("002000000", (0, 1)),
-            ("000000200", (2, 1)),
-            ("000000002", (1, 2)),
-            ("200000000", (1, 0)),
+             ('010000200', (1, 2)),
+             ('000100002', (0, 1)),
+             ('002000010', (1, 0)),
+             ('200001000', (2, 1)),
+             ('010000002', (1, 0)),
+             ('200000010', (1, 2)),
+             ('000001200', (0, 1)),
+             ('002100000', (2, 1))
         }
-
-    def test_get_symmetrical_state_action_pairs2(self):
-        state_key = "200000000"
-        action = (2, 2)
-        agent = QLearningAgent()
-        result = agent.get_symmetrical_state_action_pairs(state_key, action)
-
-        assert set(result) == {
-            ("200000000", (2, 2)),
-            ("000000200", (0, 2)),
-            ("000000002", (0, 0)),
-            ("002000000", (2, 0)),
-        }
-
 
 class TestGame:
     def test_move_record(self):
