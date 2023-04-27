@@ -1,6 +1,6 @@
 # Tic Tac Toe with FastAPI and Reinforcement learning
 
-A project of the Tic Tac Toe game with FastAPI web app and Reinforcement learning . The code features learning by updating symmetrical state-action q-value.
+A Reinforcement learning based Tic Tac Toe game. The code accelerates learning by updating 8 symmetrical (Identity + 3 90-rotation, flip_lr, flip_ud, flip along two diagonal axis) state-action's value at once. We also include a FastAPI web app for GUI.
 
 ## Installation
 
