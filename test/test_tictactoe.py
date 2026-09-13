@@ -74,13 +74,48 @@ class TestGame:
         game = TicTacToe()
         game.set_board_by_state_key(state_key)
         game.make_move(*action, 1)
-        result = game.withdraw_move(*action)
+        result = game.withdraw_move()
 
         assert (
             result
             and TicTacToe.board_to_state_key(game.board) == "212000000"
             and game.move_record == []
         )
+
+    def test_withdraw_move_only_undoes_the_last_move(self):
+        game = TicTacToe()
+        game.make_move(0, 0, 1)
+        game.make_move(1, 1, 2)
+        result = game.withdraw_move()
+
+        assert (
+            result
+            and TicTacToe.board_to_state_key(game.board) == "100000000"
+            and game.move_record == [(1, (0, 0))]
+        )
+
+    def test_withdraw_move_without_a_move_to_withdraw(self):
+        state_key = "212000000"
+        game = TicTacToe()
+        game.set_board_by_state_key(state_key)
+        result = game.withdraw_move()
+
+        assert (
+            not result
+            and TicTacToe.board_to_state_key(game.board) == "212000000"
+            and game.move_record == []
+        )
+
+    def test_set_board_clears_move_record(self):
+        game = TicTacToe()
+        game.make_move(0, 0, 1)
+        game.set_board(TicTacToe.state_key_to_board("000010000"))
+        record_after_set_board = list(game.move_record)
+
+        game.make_move(0, 0, 1)
+        game.set_board_by_state_key("000010000")
+
+        assert record_after_set_board == [] and game.move_record == []
 
     def test_state_key_to_board(self):
         state_key = "200000000"

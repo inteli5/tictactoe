@@ -105,22 +105,20 @@ class TicTacToe:
             return True
         return False
 
-    def withdraw_move(self, x: int, y: int) -> bool:
+    def withdraw_move(self) -> bool:
         """
-        Withdraw a move
+        Withdraw the last move made with make_move().
 
-        Parameters:
-        x (int): Row index of the move.
-        y (int): Column index of the move.
+        Only the last move can be withdrawn, so the board and move_record always agree.
 
         Returns:
-        bool: True if the move is withdrawn, False otherwise.
+        bool: True if a move is withdrawn, False if there is no move to withdraw.
         """
-        if not self.is_valid_move(x, y):
-            self.board[x, y] = 0
-            self.move_record.pop()
-            return True
-        return False
+        if not self.move_record:
+            return False
+        _, (x, y) = self.move_record.pop()
+        self.board[x, y] = 0
+        return True
 
     def check_win(self, player: int) -> bool:
         """
@@ -191,20 +189,26 @@ class TicTacToe:
         """
         Set the board of the game
 
+        The move record is cleared, because the moves that led to this board are unknown.
+
         Parameters:
         board (np.ndarray): A 3x3 numpy array representing the board.
         """
         self.board = board
+        self.move_record = []
 
     def set_board_by_state_key(self, state_key: str) -> None:
         """
         Set the board of the game by the state_key string
+
+        The move record is cleared, because the moves that led to this board are unknown.
 
         Parameters:
         board (str): A state_key string of length 9 representing the board.
         """
         board_array = self.state_key_to_board(state_key)
         self.board = board_array
+        self.move_record = []
 
     @staticmethod
     def state_key_to_board(state_key: str) -> np.ndarray:

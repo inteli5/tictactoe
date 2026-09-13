@@ -65,7 +65,7 @@
             init_board(gameState.player_who_move_first)
 
             } else {
-            const response = await fetch('/make_move/', {
+            const response = await fetch('/make_move', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -119,38 +119,25 @@
             player_who_move_first: 'X',
             message: '',
         };
-        // Generate a random row and column index
-        let row = Math.floor(Math.random() * gameState.board.length);
-        let col = Math.floor(Math.random() * gameState.board[0].length);
 
-        // Set the random element to 'X'
-        gameState.board[row][col] = 'X';
+        // Start a new game. player is 'X' if the AI moves first, or 'O' if you move first.
+        // When the AI moves first, the server makes its opening move with the learned Q-table.
+        async function init_board(player) {
+            const response = await fetch('/new_game', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({player_who_move_first: player})
+            });
 
-        function init_board(player) {
-
-            if (player === 'X') {
-                gameState = {
-                board: [['', '', ''], ['', '', ''], ['', '', '']],
-                player_who_move_first: 'X',
-                message: '',
-                };
-                row = Math.floor(Math.random() * gameState.board.length);
-                col = Math.floor(Math.random() * gameState.board[0].length);
-                gameState.board[row][col] = 'X';
+            if (response.ok) {
+                gameState = await response.json();
                 document.getElementById("msg").style.display="none"
+                drawBoard()
+            } else {
+                console.error('Could not start a new game.');
             }
-            else if (player === 'O'){
-                gameState = {
-                board: [['', '', ''], ['', '', ''], ['', '', '']],
-                player_who_move_first: 'O',
-                message: '',
-                };
-
-                document.getElementById("msg").style.display="none"
-
-            }
-            drawBoard()
-
         }
 
         // function handlePlayerChoice(player) {
@@ -159,7 +146,8 @@
         // }
 
         document.addEventListener('DOMContentLoaded', () => {
-            drawBoard();
+            // By default, the AI moves first.
+            init_board('X');
             const playerXButton = document.getElementById('playerX');
             const playerOButton = document.getElementById('playerO');
             

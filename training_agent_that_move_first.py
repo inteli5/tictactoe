@@ -68,7 +68,7 @@ def play_game_agent_move_first(agent: QLearningAgent, episodes: int = 10000) -> 
                         use_check_win_move = True
                         break
                     else:
-                        game.withdraw_move(*check_win_action)
+                        game.withdraw_move()
                 # If the opponent cannot win in the next move, we will choose a random move
                 if not use_check_win_move:
                     # Mock a random player

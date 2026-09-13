@@ -79,7 +79,7 @@ def play_game_to_test_second_mover_agent(
                         use_check_win_move = True
                         break
                     else:
-                        game.withdraw_move(*i)
+                        game.withdraw_move()
                 if not use_check_win_move:
                     # ai opponent.
                     agent1_state_key = game.get_state_key().translate(
