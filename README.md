@@ -7,21 +7,14 @@ This is a reinforcement learning-based Tic Tac Toe game. The code accelerates le
 ```bash
 git clone https://github.com/inteli5/tictactoe.git
 ```
-create a virtual environment by, for example, 
 
+With [uv](https://docs.astral.sh/uv/) installed, run the following in the project root. It creates `.venv` and installs the locked dependencies (including `pytest` for development):
 ```bash
-conda create -n tictactoe python=3.10
-
+uv sync
 ```
-
+The commands below use `uv run`, which runs them inside that environment. To run the tests:
 ```bash
-conda activate tictactoe
-```
-
-
-Install required packages.
-```bash
-python -m pip install -r requirements.txt
+uv run pytest
 ```
 
 
@@ -32,7 +25,7 @@ python -m pip install -r requirements.txt
 
 In the root directory of the project, run the following command in the terminal:
 ```bash
-python tictactoe_webapp.py
+uv run tictactoe_webapp.py
 ```
 After that, open a web browser and enter the URL 127.0.0.1:8000.
 You will always be 'O' and the AI will always be 'X'.
@@ -47,25 +40,25 @@ The two PKL files are the pre-trained agents.
 You can also train your own agents by backing up the PKL files and running the following command:
 
 ```bash
-python training_agent_that_move_first.py
+uv run training_agent_that_move_first.py
 ```
 
 This will train the first mover agent by playing with a random opponent. No pkl file is needed.
 
 And run
 ```bash
-python training_agent_that_move_second.py
+uv run training_agent_that_move_second.py
 ```
 This will train the second mover agent by playing with a AI opponent that uses the pkl file 'q_table_ubuntu_agent_move_first.pkl'.
 
 After training your own agent, you can test it by running the following codes that let the AI agent plays with another AI agent.
 To test the first mover agent, you can run,
 ```bash
-python agent_play_with_agent_test_first_mover_agent.py
+uv run agent_play_with_agent_test_first_mover_agent.py
 ```
 To test the second mover agent, you can run,
 ```bash
-python agent_play_with_agent_test_second_mover_agent.py
+uv run agent_play_with_agent_test_second_mover_agent.py
 ```
 If you set the parameters correctly, your agents should never lose. In the test above, the opponent agent (the agent not being tested) may not always make optimal moves. If both agents make optimal moves, they will always draw. To control whether the opponent agent makes optimal moves, you can use the is_learning flag (False means optimal move). For instance, in the 'agent_play_with_agent_test_first_mover_agent.py' file, line 78:
 ```python

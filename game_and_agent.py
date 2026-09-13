@@ -97,7 +97,7 @@ class TicTacToe:
         Returns:
         bool: True if the game is drawn, False otherwise.
         """
-        return np.all(self.board != 0)
+        return bool(np.all(self.board != 0)) and not (self.check_win(1) or self.check_win(2))
 
     def reset(self) -> None:
         """

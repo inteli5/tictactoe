@@ -70,7 +70,6 @@ async def make_move(item: Item) -> GameState:
     Returns:
         The updated game state after the player's move and the AI's response.
     """
-    print(item)
     state = item.state
     state.message = ""
 

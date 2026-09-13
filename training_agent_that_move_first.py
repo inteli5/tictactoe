@@ -59,6 +59,7 @@ def play_game_agent_move_first(agent: QLearningAgent, episodes: int = 10000) -> 
             elif game.check_draw():
                 reward = 0  # Game is a draw
             else:
+                # Check if the opponent can win in the next move
                 use_check_win_move = False
                 check_win_move_valid_actions = game.get_valid_actions()
                 for check_win_action in check_win_move_valid_actions:
@@ -68,6 +69,7 @@ def play_game_agent_move_first(agent: QLearningAgent, episodes: int = 10000) -> 
                         break
                     else:
                         game.withdraw_move(*check_win_action)
+                # If the opponent cannot win in the next move, we will choose a random move
                 if not use_check_win_move:
                     # Mock a random player
                     player2_valid_actions = game.get_valid_actions()
