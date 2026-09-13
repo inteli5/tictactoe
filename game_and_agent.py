@@ -7,6 +7,60 @@ import pickle
 
 INIT_Q_VALUE = 0
 
+# The 8 symmetries of the board, used by QLearningAgent.get_symmetrical_state_action_pairs().
+#
+# A rotation or flip only rearranges the 9 cells, and the rearrangement is the same for every board, so it is
+# computed once here instead of rotating numpy boards on every call. Cells are numbered row by row,
+# cell = 3 * row + col, which is also the order of the characters in a state_key.
+#
+# Applying a transformation to a grid of cell numbers shows where every cell comes from.
+# Example, rotate 90 degrees counter-clockwise:
+#     0 1 2        2 5 8
+#     3 4 5   ->   1 4 7   ->   flattened: [2, 5, 8, 1, 4, 7, 0, 3, 6]
+#     6 7 8        0 3 6
+# Read it as "new cell k takes the piece of old cell permutation[k]":
+# new cell 0 (top-left) takes old cell 2 (top-right), new cell 1 (top-middle) takes old cell 5 (middle-right), ...
+_CELL_GRID = np.arange(9).reshape(3, 3)
+SYMMETRY_PERMUTATIONS = [
+    transformed.flatten().tolist()
+    for transformed in (
+        _CELL_GRID,  # identity:    [0, 1, 2, 3, 4, 5, 6, 7, 8]
+        np.rot90(_CELL_GRID),  # rotate 90:   [2, 5, 8, 1, 4, 7, 0, 3, 6]
+        np.rot90(_CELL_GRID, 2),  # rotate 180:  [8, 7, 6, 5, 4, 3, 2, 1, 0]
+        np.rot90(_CELL_GRID, 3),  # rotate 270:  [6, 3, 0, 7, 4, 1, 8, 5, 2]
+        np.fliplr(_CELL_GRID),  # flip_lr:     [2, 1, 0, 5, 4, 3, 8, 7, 6]  left-right flip
+        np.flipud(_CELL_GRID),  # flip_ud:     [6, 7, 8, 3, 4, 5, 0, 1, 2]  up-down flip
+        np.fliplr(np.rot90(_CELL_GRID)),  # flip_45:  [8, 5, 2, 7, 4, 1, 6, 3, 0]  anti-diagonal flip
+        np.fliplr(np.rot90(_CELL_GRID, 3)),  # flip_135: [0, 3, 6, 1, 4, 7, 2, 5, 8]  main-diagonal flip
+    )
+]
+
+
+def _invert_permutation(permutation: List[int]) -> List[int]:
+    """
+    Invert a cell permutation.
+
+    If new cell k takes the piece of old cell permutation[k], then a piece in old cell c lands on new cell inverse[c].
+    A move needs this direction: we know the move's old cell and want its new cell.
+
+    Example, rotate 90: permutation = [2, 5, 8, 1, 4, 7, 0, 3, 6].
+    Old cell 5 (middle-right) is at position 1, so inverse[5] = 1 (top-middle).
+    The full inverse is [6, 3, 0, 7, 4, 1, 8, 5, 2].
+
+    Parameters:
+    permutation (List[int]): new cell k takes the piece of old cell permutation[k].
+
+    Returns:
+    List[int]: inverse[c] is the new cell of old cell c.
+    """
+    inverse = [0] * len(permutation)
+    for new_cell, old_cell in enumerate(permutation):
+        inverse[old_cell] = new_cell
+    return inverse
+
+
+INVERSE_SYMMETRY_PERMUTATIONS = [_invert_permutation(p) for p in SYMMETRY_PERMUTATIONS]
+
 
 class TicTacToe:
     """
@@ -244,102 +298,72 @@ class QLearningAgent:
         self, state_key: str, action: Tuple[int, int]
     ) -> List[Tuple[str, Tuple[int, int]]]:
         """
-        Get all symmetrical state-action paris for a given state-action pair.
+        Get all 8 symmetrical state-action pairs for a given state-action pair.
 
-        In before, we want to return non-duplicate state-action pair. We used the next_state_key to decide how many
-        non-duplicate state-action pair. But it still has problem.
-        For example,
-        state_key = '010000200'
-        action = (1, 2)
-        The new_state_key '010001200' has axillary diagonal symmetry but the state_key does not have any symmetry.
-        If we use the next_state_key to decide how many non-duplicate state-action pair, the answer is 4.
-        But the correct answer is 8, rather than 4.
-        Our algorithm to drop duplicate seems expensive.
-        So we choose not to drop duplicates, which should be more efficient.
+        Rotating or flipping the board does not change how good a move is, so learn() writes the same Q-value
+        to all 8 versions: identity, 3 rotations and 4 flips.
+
+        A symmetry only rearranges the 9 cells, so each pair is built from the precomputed cell lookups
+        SYMMETRY_PERMUTATIONS and INVERSE_SYMMETRY_PERMUTATIONS (see the top of this file). Cells are numbered
+        row by row, cell = 3 * row + col, which is the order of the characters in state_key.
+        - New state_key: new cell k takes the piece of old cell permutation[k].
+        - New action: the move's old cell a lands on new cell inverse[a].
+
+        Example: state_key = '010000200', action = (1, 2), rotate 90 degrees counter-clockwise.
+            permutation = [2, 5, 8, 1, 4, 7, 0, 3, 6]
+            inverse     = [6, 3, 0, 7, 4, 1, 8, 5, 2]
+
+            old board (* = move)        new board
+                0 1 0                     0 * 0
+                0 0 *        ->           1 0 0
+                2 0 0                     0 0 2
+
+            new state_key = state_key[2] + state_key[5] + state_key[8]
+                          + state_key[1] + state_key[4] + state_key[7]
+                          + state_key[0] + state_key[3] + state_key[6]
+                          = '000' + '100' + '002' = '000100002'
+            action (1, 2) is cell 3 * 1 + 2 = 5. inverse[5] = 1 (5 is at position 1 of the permutation),
+            and divmod(1, 3) = (0, 1), so the new action is (0, 1).
+
+        All 8 pairs for this example, in the order of SYMMETRY_PERMUTATIONS:
+            identity     ('010000200', (1, 2))
+            rotate 90    ('000100002', (0, 1))
+            rotate 180   ('002000010', (1, 0))
+            rotate 270   ('200001000', (2, 1))
+            flip_lr      ('010000002', (1, 0))
+            flip_ud      ('200000010', (1, 2))
+            flip_45      ('000001200', (0, 1))
+            flip_135     ('002100000', (2, 1))
+
+        Duplicates are not dropped. When the board itself is symmetric some pairs repeat, e.g. the empty board
+        with the centre move (1, 1) gives the same pair 8 times. Writing the same value to the same key again
+        is harmless, while predicting the number of unique pairs is error-prone: '010000200' with action (1, 2)
+        has 8 unique pairs, although its next state '010001200' is symmetric about the anti-diagonal and has
+        only 4 unique versions.
 
         Parameters:
         state_key (str): A string representing the current state of the board.
         action (Tuple[int, int]): a tuple representing the action to be taken.
 
         Returns:
-        List[Tuple[str, Tuple[int, int]]]: A list of symmetrical state-action pair.
+        List[Tuple[str, Tuple[int, int]]]: A list of 8 symmetrical state-action pairs (with plain int coordinates).
         """
-
-        # Initialize a temp game object
-        game = TicTacToe()
-        game.set_board_by_state_key(state_key)
-        valid_move = game.make_move(*action, 1)
-        if not valid_move:  # AI agent always use 1 'X'.
+        action_cell = 3 * action[0] + action[1]
+        if state_key[action_cell] != "0":
             raise Exception(
                 f"The action {action} is not valid for the state key {state_key}."
             )
 
-        # Convert the state_key to a 3x3 NumPy array
-        board = game.board
-
-        # Generate all possible symmetrical states and their transformations
-        symmetrical_states_for_next_state_key = {
-            ("identity", 1): board,
-            # [[0 1 2]
-            # [3 4 5]
-            # [6 7 8]]
-            ("rotate", 1): np.rot90(board),  # 90 degrees counter-clockwise rotation
-            # e.g.
-            # [[2 5 8]
-            # [1 4 7]
-            # [0 3 6]]
-            ("rotate", 2): np.rot90(board, 2),  # 180 degrees counter-clockwise rotation
-            ("rotate", 3): np.rot90(board, 3),  # 270 degrees counter-clockwise rotation
-            ("flip_lr", 1): np.fliplr(board),  # Left-right flip
-            ("flip_ud", 1): np.flipud(board),  # Up-down flip
-            ("flip_45", 1): np.fliplr(
-                np.rot90(board)
-            ),  # Flip about the 45-degree line (axillary diagonal axis of the matrix)
-            # e.g.
-            # [[8 5 2]
-            #  [7 4 1]
-            #  [6 3 0]]
-            ("flip_135", 1): np.fliplr(
-                np.rot90(board, 3)
-            )  # Flip about the 135-degree line (main diagonal axis of the matrix)
-            # e.g.
-            #  [[0 3 6]
-            #  [1 4 7]
-            #  [2 5 8]]
-        }
-
-        board = TicTacToe.state_key_to_board(state_key)
-
-        symmetrical_states_for_state_key = {
-            ("identity", 1): board,
-            ("rotate", 1): np.rot90(board),  # 90 degrees counter-clockwise rotation
-            ("rotate", 2): np.rot90(board, 2),  # 180 degrees counter-clockwise rotation
-            ("rotate", 3): np.rot90(board, 3),  # 270 degrees counter-clockwise rotation
-            ("flip_lr", 1): np.fliplr(board),  # Left-right flip
-            ("flip_ud", 1): np.flipud(board),  # Up-down flip
-            ("flip_45", 1): np.fliplr(
-                np.rot90(board)
-            ),  # Flip about the 45-degree line (axillary diagonal axis of the matrix)
-            ("flip_135", 1): np.fliplr(
-                np.rot90(board, 3)
-            ),  # Flip about the 135-degree line (main diagonal axis of the matrix)
-        }
-
         symmetrical_state_actions = []
-        for transformation in symmetrical_states_for_state_key.keys():
-            this_step_board = symmetrical_states_for_state_key[transformation]
-            next_step_board = symmetrical_states_for_next_state_key[transformation]
-
-            move = next_step_board - this_step_board
-            row, col = np.nonzero(move)
-            symmetrical_action = (row[0], col[0])
+        for permutation, inverse in zip(
+            SYMMETRY_PERMUTATIONS, INVERSE_SYMMETRY_PERMUTATIONS
+        ):
+            # e.g. rotate 90: '010000200' -> '000100002'
+            symmetrical_state_key = "".join(state_key[cell] for cell in permutation)
+            # e.g. rotate 90: cell 5 = (1, 2) -> cell inverse[5] = 1 = (0, 1)
+            symmetrical_action = divmod(inverse[action_cell], 3)
             symmetrical_state_actions.append(
-                (
-                    TicTacToe.board_to_state_key(
-                        symmetrical_states_for_state_key[transformation]
-                    ),
-                    symmetrical_action,
-                )
+                (symmetrical_state_key, symmetrical_action)
             )
 
         return symmetrical_state_actions
