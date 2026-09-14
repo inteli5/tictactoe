@@ -23,6 +23,18 @@ class TestWebApp:
 
         assert response.status_code == 200 and response.headers["content-type"] == "image/jpeg"
 
+    def test_page_uses_relative_urls(self):
+        # The app is served under https://lamian.ai/tictactoe/, so the page must not request URLs from the site root.
+        page = client.get("/").text
+
+        assert (
+            "fetch('new_game'" in page
+            and "fetch('make_move'" in page
+            and 'src="static/girl.jpg"' in page
+            and "fetch('/" not in page
+            and 'src="/' not in page
+        )
+
     def test_new_game_ai_first_opens_with_learned_corner_move(self):
         response = client.post("/new_game", json={"player_who_move_first": "X"})
         board = response.json()["board"]

@@ -478,7 +478,7 @@
         </div>
 
         <header class="header">
-            <img class="avatar" src="/static/girl.jpg" alt="">
+            <img class="avatar" src="static/girl.jpg" alt="">
             <div>
                 <h1 class="title">The AI Tic Tac Toe Game</h1>
                 <p class="subtitle">you're O, the AI is X</p>
@@ -572,7 +572,7 @@
 
             busy = true;
             try {
-                const response = await fetch('/make_move', {
+                const response = await fetch('make_move', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -662,7 +662,7 @@
 
             busy = true;
             try {
-                const response = await fetch('/new_game', {
+                const response = await fetch('new_game', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
