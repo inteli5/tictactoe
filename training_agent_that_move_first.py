@@ -31,15 +31,16 @@ def play_game_agent_move_first(agent: QLearningAgent, episodes: int = 10000) -> 
 
         game.reset()
 
-        # Set the first player (1 for 'X' and 2 for 'O'), 'X' is agent, 'O' is opponent
-        player1 = 1
-        player2 = 2
+        # Player numbers on the board: 1 is the agent being trained, 2 is its opponent.
+        # The agent moves first.
+        agent_player = 1
+        opponent_player = 2
 
         state_key = game.get_state_key()
 
         # Continue playing until a player wins or the game is a draw
         while not (
-            game.check_win(player1) or game.check_win(player2) or game.check_draw()
+            game.check_win(agent_player) or game.check_win(opponent_player) or game.check_draw()
         ):
             # Get the current state key
             valid_actions = game.get_valid_actions()
@@ -48,11 +49,11 @@ def play_game_agent_move_first(agent: QLearningAgent, episodes: int = 10000) -> 
             action = agent.choose_action(state_key, valid_actions)
 
             # Make the chosen move on the game board
-            game.make_move(*action, player1)
+            game.make_move(*action, agent_player)
 
             # Calculate the reward for the move
             reward = -0.1
-            if game.check_win(player1):
+            if game.check_win(agent_player):
                 reward = 1  # Winning the game
             elif game.check_draw():
                 reward = 0  # Game is a draw
@@ -62,7 +63,7 @@ def play_game_agent_move_first(agent: QLearningAgent, episodes: int = 10000) -> 
 
                 # Calculate the reward for the move
 
-                if game.check_win(player2):
+                if game.check_win(opponent_player):
                     reward = -1
 
             # Get the new state key after making the move
