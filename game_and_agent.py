@@ -1,8 +1,8 @@
 import numpy as np
 import random
-from typing import List, Tuple
+from typing import Dict, List, Optional, Tuple
 
-import pickle
+import json
 
 
 INIT_Q_VALUE = 0
@@ -119,6 +119,28 @@ class TicTacToe:
         _, (x, y) = self.move_record.pop()
         self.board[x, y] = 0
         return True
+
+    def find_winning_move(self, player: int) -> Optional[Tuple[int, int]]:
+        """
+        Find a move that wins the game immediately for the given player.
+
+        Each valid move is tried and then withdrawn, so the board and move_record are unchanged afterwards.
+        Moves are tried row by row, and the first winning move is returned.
+        For example, on the board '220110000' player 2 wins with (0, 2), and player 1 wins with (1, 2).
+
+        Parameters:
+        player (int): The player to check, can be 1 or 2.
+
+        Returns:
+        Optional[Tuple[int, int]]: The first winning move, or None if the player cannot win with one move.
+        """
+        for action in self.get_valid_actions():
+            self.make_move(*action, player)
+            is_winning_move = self.check_win(player)
+            self.withdraw_move()
+            if is_winning_move:
+                return action
+        return None
 
     def check_win(self, player: int) -> bool:
         """
@@ -259,7 +281,7 @@ class QLearningAgent:
         alpha (float): Learning rate (default: 0.1)
         gamma (float): Discount factor (default: 1)
         epsilon (float): Exploration rate (default: 0.1)
-        pre_trained_q_table (str): Path to a pre-trained Q-table (default: '')
+        pre_trained_q_table (str): Path to a pre-trained Q-table JSON file saved by save_q_table() (default: '')
 
         """
         self.alpha = alpha
@@ -267,10 +289,57 @@ class QLearningAgent:
         self.epsilon = epsilon
 
         if pre_trained_q_table:
-            with open(pre_trained_q_table, "rb") as file:
-                self.q_table = pickle.load(file)
+            self.q_table = self.load_q_table(pre_trained_q_table)
         else:
             self.q_table = {}
+
+    def save_q_table(self, path: str) -> None:
+        """
+        Save the Q-table to a JSON file.
+
+        JSON keys must be strings, so the table is nested by state_key, and each action (row, col) is written as
+        "row,col". For example, the entries
+            ('000000000', (0, 0)): 0.7818519084051515
+            ('000000000', (0, 1)): 0.7694268621541703
+        are saved as
+            {"000000000": {"0,0": 0.7818519084051515, "0,1": 0.7694268621541703}}
+
+        JSON is used instead of pickle because loading a pickle file can run arbitrary code, while a JSON file only
+        holds plain data. Python writes each float with enough digits to read it back exactly.
+
+        Parameters:
+        path (str): Path of the JSON file to write.
+        """
+        nested_q_table = {}
+        for (state_key, (row, col)), value in self.q_table.items():
+            nested_q_table.setdefault(state_key, {})[f"{row},{col}"] = float(value)
+
+        with open(path, "w") as file:
+            json.dump(nested_q_table, file, indent=2, sort_keys=True)
+
+    @staticmethod
+    def load_q_table(path: str) -> Dict[Tuple[str, Tuple[int, int]], float]:
+        """
+        Load a Q-table from a JSON file saved by save_q_table().
+
+        Each "row,col" key is turned back into an (int, int) action, for example
+            {"000000000": {"0,1": 0.7694268621541703}}  ->  {('000000000', (0, 1)): 0.7694268621541703}
+
+        Parameters:
+        path (str): Path of the JSON file to read.
+
+        Returns:
+        Dict[Tuple[str, Tuple[int, int]], float]: The Q-table, keyed by (state_key, action).
+        """
+        with open(path) as file:
+            nested_q_table = json.load(file)
+
+        q_table = {}
+        for state_key, actions in nested_q_table.items():
+            for action, value in actions.items():
+                row, col = action.split(",")
+                q_table[(state_key, (int(row), int(col)))] = value
+        return q_table
 
     def get_q_value(self, state_key: str, action: Tuple[int, int]) -> float:
         """
@@ -461,3 +530,45 @@ class QLearningAgent:
 
         for sym_state_key, sym_action in symmetrical_states_and_actions:
             self.set_q_value(sym_state_key, sym_action, new_q_value)
+
+
+def make_opponent_move(
+    game: TicTacToe,
+    opponent_agent: Optional[QLearningAgent] = None,
+    is_learning: bool = True,
+) -> Tuple[int, int]:
+    """
+    Make the opponent's move in the training and test-play scripts, and return it. The opponent is always player 2.
+
+    1. If the opponent can win with this move, it always plays the winning move. During training this punishes the
+       agent's mistakes right away, which speeds up learning. During test-play it makes the opponent stronger.
+    2. Otherwise it plays a random move if opponent_agent is None, or the move chosen by opponent_agent.
+
+    Q-learning agents always learn as player 1, so opponent_agent sees the board with 1 and 2 swapped.
+    For example, the board '120000000' is shown to it as '210000000'.
+
+    Parameters:
+    game (TicTacToe): The game to make the move in.
+    opponent_agent (Optional[QLearningAgent]): The agent that chooses the move, or None for a random move
+                                               (default: None).
+    is_learning (bool): Passed to opponent_agent.choose_action(). True lets the agent explore (default: True).
+
+    Returns:
+    Tuple[int, int]: The move that was made.
+    """
+    opponent = 2
+    action = game.find_winning_move(opponent)
+
+    if action is None:
+        valid_actions = game.get_valid_actions()
+        if opponent_agent is None:
+            action = random.choice(valid_actions)
+        else:
+            # Swap 1 and 2, so that the opponent agent sees its own pieces as 1.
+            opponent_state_key = game.get_state_key().translate(str.maketrans("12", "21"))
+            action = opponent_agent.choose_action(
+                opponent_state_key, valid_actions, is_learning=is_learning
+            )
+
+    game.make_move(*action, opponent)
+    return action

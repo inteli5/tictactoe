@@ -35,21 +35,21 @@ By default, the AI moves first. However, you can click the button "You (O) first
 
 ### Training
 
-The two PKL files are the pre-trained agents.
+The two JSON files, 'q_table_ubuntu_agent_move_first.json' and 'q_table_ubuntu_agent_move_second.json', are the pre-trained agents. Each file maps a board state to the Q-values of its moves, for example `{"000000000": {"0,0": 0.78, "0,1": 0.77, ...}}`, where "row,col" is the cell of the move. The Q-tables are stored as JSON rather than pickle, because loading a pickle file can run arbitrary code.
 
-You can also train your own agents by backing up the PKL files and running the following command:
+You can also train your own agents by backing up the JSON files and running the following command:
 
 ```bash
 uv run training_agent_that_move_first.py
 ```
 
-This will train the first mover agent by playing with a random opponent. No pkl file is needed.
+This will train the first mover agent by playing with a random opponent. No JSON file is needed.
 
 And run
 ```bash
 uv run training_agent_that_move_second.py
 ```
-This will train the second mover agent by playing with a AI opponent that uses the pkl file 'q_table_ubuntu_agent_move_first.pkl'.
+This will train the second mover agent by playing with a AI opponent that uses the JSON file 'q_table_ubuntu_agent_move_first.json'.
 
 After training your own agent, you can test it by running the following codes that let the AI agent plays with another AI agent.
 To test the first mover agent, you can run,
@@ -60,10 +60,9 @@ To test the second mover agent, you can run,
 ```bash
 uv run agent_play_with_agent_test_second_mover_agent.py
 ```
-If you set the parameters correctly, your agents should never lose. In the test above, the opponent agent (the agent not being tested) may not always make optimal moves. If both agents make optimal moves, they will always draw. To control whether the opponent agent makes optimal moves, you can use the is_learning flag (False means optimal move). For instance, in the 'agent_play_with_agent_test_first_mover_agent.py' file, line 78:
+If you set the parameters correctly, your agents should never lose. In the test above, the opponent agent (the agent not being tested) may not always make optimal moves. If both agents make optimal moves, they will always draw. The opponent always plays an immediate winning move when it has one; otherwise the opponent agent chooses the move (see `make_opponent_move()` in 'game_and_agent.py'). To control whether the opponent agent makes optimal moves, you can use the is_learning flag (False means optimal move). For instance, in the 'agent_play_with_agent_test_first_mover_agent.py' file:
 ```python
-agent1_action = agent1.choose_action(
-    agent1_state_key, game.get_valid_actions(), is_learning=False)
+make_opponent_move(game, agent1, is_learning=False)
 ```
 
 The file 'game_and_agent.py' contains the classes for the TicTacToe game and the reinforcement learning agent. We assign rewards of (1, 0, -1) for win, draw, and loss, respectively. Additionally, we apply a small negative reward of -0.1 for every step. Since each episode is relatively short, we set the discount factor gamma to 1, although 0.9 could also be used. To expedite the learning process, we update not only the current state-action pair but also its symmetrical state-action pairs. As an example, below is a portion of the q-table for the second mover agent.

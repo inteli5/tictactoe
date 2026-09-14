@@ -15,10 +15,10 @@ templates = Jinja2Templates(directory="templates")
 # Initialize QLearning agents.
 # Every request builds its own TicTacToe game from the board it receives, so requests never share a board.
 agent1 = QLearningAgent(
-    pre_trained_q_table="q_table_ubuntu_agent_move_first.pkl",
+    pre_trained_q_table="q_table_ubuntu_agent_move_first.json",
 )
 agent2 = QLearningAgent(
-    pre_trained_q_table="q_table_ubuntu_agent_move_second.pkl",
+    pre_trained_q_table="q_table_ubuntu_agent_move_second.json",
 )
 
 player_agent = 1

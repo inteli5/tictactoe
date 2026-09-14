@@ -2,7 +2,7 @@ import random
 from collections import Counter
 from typing import List
 
-from game_and_agent import QLearningAgent, TicTacToe
+from game_and_agent import QLearningAgent, TicTacToe, make_opponent_move
 from time import perf_counter
 
 
@@ -70,26 +70,8 @@ def play_game_to_test_second_mover_agent(
             if game.check_win(player1):
                 reward = 1  # Winning the game
             else:
-                # if the opponent can win in the next move, we will choose this to accelerate the learning process.
-                use_check_win_move = False
-                valid_actions = game.get_valid_actions()
-                for i in valid_actions:
-                    game.make_move(*i, player2)
-                    if game.check_win(player2):
-                        use_check_win_move = True
-                        break
-                    else:
-                        game.withdraw_move()
-                if not use_check_win_move:
-                    # ai opponent.
-                    agent1_state_key = game.get_state_key().translate(
-                        str.maketrans("12", "21")
-                    )
-
-                    agent1_action = agent1.choose_action(
-                        agent1_state_key, game.get_valid_actions(), is_learning=True
-                    )
-                    game.make_move(*agent1_action, player2)
+                # The opponent wins immediately if it can, otherwise agent1 chooses its move
+                make_opponent_move(game, agent1, is_learning=True)
 
                 # Calculate the reward for the move
 
@@ -112,13 +94,13 @@ if __name__ == "__main__":
     # agent is the agent we are testing. Whenever it loses a game, we will issue an Exception. agent will move second.
 
     agent = QLearningAgent(
-        pre_trained_q_table="q_table_ubuntu_agent_move_second.pkl",
+        pre_trained_q_table="q_table_ubuntu_agent_move_second.json",
     )
 
     # agent1 is the AI opponent. agent1 will always move first.
 
     agent1 = QLearningAgent(
-        pre_trained_q_table="q_table_ubuntu_agent_move_first.pkl",
+        pre_trained_q_table="q_table_ubuntu_agent_move_first.json",
     )
 
     # Train the agent by playing the game

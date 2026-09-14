@@ -1,8 +1,7 @@
 import random
 from time import perf_counter
-import pickle
 
-from game_and_agent import QLearningAgent, TicTacToe
+from game_and_agent import QLearningAgent, TicTacToe, make_opponent_move
 
 
 def play_game_agent_move_second(
@@ -74,27 +73,8 @@ def play_game_agent_move_second(
             if game.check_win(player1):
                 reward = 1  # Winning the game
             else:
-                # if the opponent can win in the next move, we will choose this to accelerate the learning process.
-
-                use_check_win_move = False
-                valid_actions = game.get_valid_actions()
-                for i in valid_actions:
-                    game.make_move(*i, player2)
-                    if game.check_win(player2):
-                        use_check_win_move = True
-                        break
-                    else:
-                        game.withdraw_move()
-                if not use_check_win_move:
-                    # ai opponent.
-                    agent1_state_key = game.get_state_key().translate(
-                        str.maketrans("12", "21")
-                    )
-
-                    agent1_action = agent1.choose_action(
-                        agent1_state_key, game.get_valid_actions()
-                    )
-                    game.make_move(*agent1_action, player2)
+                # The opponent wins immediately if it can, otherwise agent1 chooses its move
+                make_opponent_move(game, agent1)
 
                 # Calculate the reward for the move
 
@@ -126,18 +106,17 @@ if __name__ == "__main__":
     # The agent to be trained
     agent = QLearningAgent()
 
-    # agent1 is the AI opponent. agent1 will always move first. q_table_ubuntu_agent_move_first.pkl is a pre-trained
+    # agent1 is the AI opponent. agent1 will always move first. q_table_ubuntu_agent_move_first.json is a pre-trained
     # q_table for the first mover agent. The opponent agent can not always take
     # the optimal move, because if so, the agent can not learn from the opponent's suboptimal moves and could make wrong
     # move in the unseen states.
     agent1 = QLearningAgent(
         epsilon=0.5,
-        pre_trained_q_table="q_table_ubuntu_agent_move_first.pkl",
+        pre_trained_q_table="q_table_ubuntu_agent_move_first.json",
     )
 
     # Train the agent by playing the game
     EP = 1000000
     play_game_agent_move_second(agent, agent1, episodes=EP)
 
-    with open("q_table_ubuntu_agent_move_second.pkl", "wb") as f:
-        pickle.dump(agent.q_table, f)
+    agent.save_q_table("q_table_ubuntu_agent_move_second.json")

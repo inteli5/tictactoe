@@ -1,8 +1,6 @@
 from time import perf_counter
-import pickle
-import random
 
-from game_and_agent import QLearningAgent, TicTacToe
+from game_and_agent import QLearningAgent, TicTacToe, make_opponent_move
 
 
 def play_game_agent_move_first(agent: QLearningAgent, episodes: int = 10000) -> None:
@@ -59,22 +57,8 @@ def play_game_agent_move_first(agent: QLearningAgent, episodes: int = 10000) -> 
             elif game.check_draw():
                 reward = 0  # Game is a draw
             else:
-                # Check if the opponent can win in the next move
-                use_check_win_move = False
-                check_win_move_valid_actions = game.get_valid_actions()
-                for check_win_action in check_win_move_valid_actions:
-                    game.make_move(*check_win_action, player2)
-                    if game.check_win(player2):
-                        use_check_win_move = True
-                        break
-                    else:
-                        game.withdraw_move()
-                # If the opponent cannot win in the next move, we will choose a random move
-                if not use_check_win_move:
-                    # Mock a random player
-                    player2_valid_actions = game.get_valid_actions()
-                    player2_random_actions = random.choice(player2_valid_actions)
-                    game.make_move(*player2_random_actions, player2)
+                # The opponent wins immediately if it can, otherwise it plays a random move
+                make_opponent_move(game)
 
                 # Calculate the reward for the move
 
@@ -111,5 +95,4 @@ if __name__ == "__main__":
     EP = 1000000
     play_game_agent_move_first(agent, episodes=EP)
 
-    with open("q_table_ubuntu_agent_move_first.pkl", "wb") as f:
-        pickle.dump(agent.q_table, f)
+    agent.save_q_table("q_table_ubuntu_agent_move_first.json")
