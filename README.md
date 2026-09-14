@@ -30,12 +30,13 @@ uv run tictactoe_webapp.py
 After that, open a web browser and enter the URL 127.0.0.1:8000.
 You will always be 'O' and the AI will always be 'X'.
 By default, the AI moves first. However, you can click the button "You (O) first" to move first.
+When a game ends, a popup shows the result. Click "Play again" or the board to start a new game.
 
 ![screenshot](./screenshot.png)
 
 ### Training
 
-The two JSON files, 'q_table_ubuntu_agent_move_first.json' and 'q_table_ubuntu_agent_move_second.json', are the pre-trained agents. Each file maps a board state to the Q-values of its moves, for example `{"000000000": {"0,0": 0.78, "0,1": 0.77, ...}}`, where "row,col" is the cell of the move. The Q-tables are stored as JSON rather than pickle, because loading a pickle file can run arbitrary code.
+The two JSON files, 'q_table_ubuntu_agent_move_first.json' and 'q_table_ubuntu_agent_move_second.json', are the pre-trained agents. Each file maps a board state to the Q-values of its moves, for example `{"000000000": {"0,0": 0.78, "0,1": 0.76, ...}}`, where "row,col" is the cell of the move. The Q-tables are stored as JSON rather than pickle, because loading a pickle file can run arbitrary code.
 
 You can also train your own agents by backing up the JSON files and running the following command:
 
@@ -65,25 +66,22 @@ If you set the parameters correctly, your agents should never lose. In the test 
 make_opponent_move(game, agent1, is_learning=False)
 ```
 
-The file 'game_and_agent.py' contains the classes for the TicTacToe game and the reinforcement learning agent. We assign rewards of (1, 0, -1) for win, draw, and loss, respectively. Additionally, we apply a small negative reward of -0.1 for every step. Since each episode is relatively short, we set the discount factor gamma to 1, although 0.9 could also be used. To expedite the learning process, we update not only the current state-action pair but also its symmetrical state-action pairs. As an example, below is a portion of the q-table for the second mover agent.
+The file 'game_and_agent.py' contains the classes for the TicTacToe game and the reinforcement learning agent. We assign rewards of (1, 0, -1) for win, draw, and loss, respectively. Additionally, we apply a small negative reward of -0.1 for every step. Since each episode is relatively short, we set the discount factor gamma to 1, although 0.9 could also be used. To expedite the learning process, we update not only the current state-action pair but also its symmetrical state-action pairs. As an example, below is a portion of the q-table for the second mover agent, from 'q_table_ubuntu_agent_move_second.json'.
 
-{('000020000', (0, 1)): -0.6744205096465703,
+```json
+"000020000": {
+  "0,0": 0.09718495206052641,
+  "0,1": -0.6292684642502503,
+  "0,2": 0.09718495206052641,
+  "1,0": -0.6292684642502503,
+  "1,2": -0.6292684642502503,
+  "2,0": 0.09718495206052641,
+  "2,1": -0.6292684642502503,
+  "2,2": 0.09718495206052641
+}
+```
 
- ('000020000', (1, 0)): -0.6744205096465703,
-
- ('000020000', (2, 1)): -0.6744205096465703,
-
- ('000020000', (1, 2)): -0.6744205096465703,
-
- ('000020000', (0, 0)): -0.09080339631767263,
-
- ('000020000', (2, 0)): -0.09080339631767263,
-
- ('000020000', (2, 2)): -0.09080339631767263,
-
- ('000020000', (0, 2)): -0.09080339631767263}
-
-'000020000' represents the current state of the board, indicating that the opponent (always 2) has made the first move by placing their piece in the center of the board. An action is represented by a tuple, such as (0, 1). The first four actions correspond to the four edges of the board, which all have the same q-value. The next four actions correspond to the four corners of the board.
+'000020000' represents the current state of the board, indicating that the opponent (always 2) has made the first move by placing their piece in the center of the board. Each action is written as "row,col", such as "0,1". The four corners ("0,0", "0,2", "2,0" and "2,2") all have the same q-value, and so do the four edges ("0,1", "1,0", "1,2" and "2,1").
 
 If the AI agent chooses to make their moves on the edges, they are guaranteed to lose, and therefore these actions have a lower q-value. If the AI agent chooses to make their moves on the corners, it is possible to achieve a draw.
 

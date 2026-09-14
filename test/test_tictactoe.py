@@ -51,10 +51,19 @@ class TestQLearningAgent:
         assert json.loads(path.read_text()) == {"000000000": {"0,1": 0.5}}
 
     def test_load_pre_trained_q_tables(self):
-        first_mover = QLearningAgent(pre_trained_q_table="q_table_ubuntu_agent_move_first.json")
-        second_mover = QLearningAgent(pre_trained_q_table="q_table_ubuntu_agent_move_second.json")
+        # The exact number of entries changes whenever the agents are retrained, so check the shape instead.
+        for path in ("q_table_ubuntu_agent_move_first.json", "q_table_ubuntu_agent_move_second.json"):
+            q_table = QLearningAgent(pre_trained_q_table=path).q_table
 
-        assert len(first_mover.q_table) == 8541 and len(second_mover.q_table) == 7008
+            assert q_table and all(
+                len(state_key) == 9
+                and set(state_key) <= set("012")
+                and type(row) is int
+                and type(col) is int
+                and state_key[3 * row + col] == "0"
+                and isinstance(value, float)
+                for (state_key, (row, col)), value in q_table.items()
+            )
 
 class TestGame:
     def test_move_record(self):

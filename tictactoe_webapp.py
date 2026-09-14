@@ -3,13 +3,15 @@ from typing import List, Literal
 import numpy as np
 import uvicorn
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from starlette.responses import HTMLResponse
 from game_and_agent import TicTacToe, QLearningAgent
 
-# Create FastAPI app and Jinja2 templates
+# Create FastAPI app, static files (the avatar image) and Jinja2 templates
 app = FastAPI(title="Tic Tac Toe")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 # Initialize QLearning agents.
