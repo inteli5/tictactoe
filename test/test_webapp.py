@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
 
+import tictactoe_webapp
+from game_and_agent import TicTacToe
 from tictactoe_webapp import app
 
 client = TestClient(app)
@@ -7,9 +9,14 @@ client = TestClient(app)
 CORNERS = [(0, 0), (0, 2), (2, 0), (2, 2)]
 
 
-def post_move(board, player_who_move_first, x, y):
-    state = {"board": board, "player_who_move_first": player_who_move_first, "message": ""}
+def post_move(board, player_who_move_first, x, y, difficulty="easy"):
+    state = {"board": board, "player_who_move_first": player_who_move_first, "message": "", "difficulty": difficulty}
     return client.post("/make_move", json={"state": state, "x": x, "y": y})
+
+
+class StubAgent:
+    def choose_action(self, state_key, valid_actions, is_learning=True):
+        return ("learned move", is_learning)
 
 
 class TestWebApp:
@@ -36,7 +43,7 @@ class TestWebApp:
         )
 
     def test_new_game_ai_first_opens_with_learned_corner_move(self):
-        response = client.post("/new_game", json={"player_who_move_first": "X"})
+        response = client.post("/new_game", json={"player_who_move_first": "X", "difficulty": "hard"})
         board = response.json()["board"]
         x_cells = [(x, y) for x in range(3) for y in range(3) if board[x][y] == "X"]
         o_count = sum(row.count("O") for row in board)
@@ -54,6 +61,54 @@ class TestWebApp:
         assert (
             response.status_code == 200
             and response.json()["board"] == [["", "", ""], ["", "", ""], ["", "", ""]]
+        )
+
+    def test_difficulty_defaults_to_easy(self):
+        response = client.post("/new_game", json={"player_who_move_first": "O"})
+
+        assert response.json()["difficulty"] == "easy"
+
+    def test_new_game_keeps_difficulty(self):
+        response = client.post("/new_game", json={"player_who_move_first": "O", "difficulty": "medium"})
+
+        assert response.status_code == 200 and response.json()["difficulty"] == "medium"
+
+    def test_unknown_difficulty_is_rejected(self):
+        response = client.post("/new_game", json={"player_who_move_first": "O", "difficulty": "impossible"})
+
+        assert response.status_code == 422
+
+    def test_difficulty_is_used_for_ai_moves(self, monkeypatch):
+        used = []
+
+        def record_difficulty(agent, game, difficulty):
+            used.append(difficulty)
+            return game.get_valid_actions()[0]
+
+        monkeypatch.setattr(tictactoe_webapp, "choose_agent_move", record_difficulty)
+        client.post("/new_game", json={"player_who_move_first": "X", "difficulty": "medium"})
+        post_move([["X", "", ""], ["", "", ""], ["", "", ""]], "X", 1, 1, difficulty="hard")
+
+        assert used == ["medium", "hard"]
+
+    def test_random_move_rate_per_difficulty(self, monkeypatch):
+        # random.choice picks the last empty square, (2, 2), so a random move is easy to recognise.
+        game = TicTacToe()
+        monkeypatch.setattr(tictactoe_webapp.random, "choice", lambda options: options[-1])
+
+        def move_with_roll(roll, difficulty):
+            monkeypatch.setattr(tictactoe_webapp.random, "random", lambda: roll)
+            return tictactoe_webapp.choose_agent_move(StubAgent(), game, difficulty)
+
+        random_move = (2, 2)
+        learned_move = ("learned move", False)
+
+        assert (
+            move_with_roll(0.49, "easy") == random_move
+            and move_with_roll(0.5, "easy") == learned_move
+            and move_with_roll(0.19, "medium") == random_move
+            and move_with_roll(0.2, "medium") == learned_move
+            and move_with_roll(0.0, "hard") == learned_move
         )
 
     def test_make_move_ai_replies(self):

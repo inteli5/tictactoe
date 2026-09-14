@@ -159,14 +159,20 @@
 
         .choose {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
+            flex-direction: column;
+            gap: 12px;
             margin: 0 0 18px;
             padding: 14px 18px;
             background: linear-gradient(180deg, #fff5e9, #fdeada);
             border-radius: 18px;
             border: 1px dashed #f0c9a9;
+        }
+
+        .choose-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
         }
 
         .choose-label {
@@ -451,7 +457,8 @@
             .msgbox { font-size: 15px; padding: 14px 16px 14px 50px; min-height: 60px; }
             .msgbox-icon { left: 12px; width: 28px; height: 28px; }
             .msgbox-icon svg { width: 14px; height: 14px; }
-            .choose { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .choose { gap: 14px; }
+            .choose-row { flex-direction: column; align-items: flex-start; gap: 8px; }
             .choose-buttons { width: 100%; }
             .pill { flex: 1; font-size: 15px; padding: 10px 12px; }
             .grid { gap: 10px; width: 100%; }
@@ -494,10 +501,20 @@
         </div>
 
         <section class="choose" id="choosePlayer">
-            <div class="choose-label">Who goes first?</div>
-            <div class="choose-buttons">
-                <button type="button" class="pill" id="playerO" aria-pressed="false">You (O) first</button>
-                <button type="button" class="pill on" id="playerX" aria-pressed="true">AI (X) first</button>
+            <div class="choose-row">
+                <div class="choose-label" id="firstLabel">Who goes first?</div>
+                <div class="choose-buttons" role="group" aria-labelledby="firstLabel">
+                    <button type="button" class="pill" id="playerO" aria-pressed="false">You (O) first</button>
+                    <button type="button" class="pill on" id="playerX" aria-pressed="true">AI (X) first</button>
+                </div>
+            </div>
+            <div class="choose-row">
+                <div class="choose-label" id="difficultyLabel">Difficulty</div>
+                <div class="choose-buttons" role="group" aria-labelledby="difficultyLabel">
+                    <button type="button" class="pill on" data-difficulty="easy" aria-pressed="true">Easy</button>
+                    <button type="button" class="pill" data-difficulty="medium" aria-pressed="false">Medium</button>
+                    <button type="button" class="pill" data-difficulty="hard" aria-pressed="false">Hard</button>
+                </div>
             </div>
         </section>
 
@@ -540,6 +557,7 @@
         const messageElement = document.getElementById('message');
         const playerOButton = document.getElementById('playerO');
         const playerXButton = document.getElementById('playerX');
+        const difficultyButtons = document.querySelectorAll('[data-difficulty]');
         const modal = document.getElementById('modal');
         const modalClose = document.getElementById('modalClose');
 
@@ -547,6 +565,7 @@
             board: [['', '', ''], ['', '', ''], ['', '', '']],
             player_who_move_first: 'X',
             message: '',
+            difficulty: 'easy',
         };
         // True while a request is in flight, so double clicks cannot send two moves.
         let busy = false;
@@ -645,17 +664,23 @@
             }
         }
 
-        function updatePlayerButtons() {
+        function updateChoiceButtons() {
             const aiFirst = gameState.player_who_move_first === 'X';
             playerXButton.classList.toggle('on', aiFirst);
             playerXButton.setAttribute('aria-pressed', String(aiFirst));
             playerOButton.classList.toggle('on', !aiFirst);
             playerOButton.setAttribute('aria-pressed', String(!aiFirst));
+            difficultyButtons.forEach((button) => {
+                const selected = button.dataset.difficulty === gameState.difficulty;
+                button.classList.toggle('on', selected);
+                button.setAttribute('aria-pressed', String(selected));
+            });
         }
 
         // Start a new game. player is 'X' if the AI moves first, or 'O' if you move first.
+        // difficulty is 'easy', 'medium' or 'hard', and stays the same unless given.
         // When the AI moves first, the server makes its opening move.
-        async function init_board(player) {
+        async function init_board(player, difficulty = gameState.difficulty) {
             if (busy) {
                 return;
             }
@@ -667,7 +692,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({player_who_move_first: player})
+                    body: JSON.stringify({player_who_move_first: player, difficulty: difficulty})
                 });
 
                 if (response.ok) {
@@ -675,7 +700,7 @@
                     closeModal();
                     drawBoard(null);
                     showMessage();
-                    updatePlayerButtons();
+                    updateChoiceButtons();
                 } else {
                     console.error('Could not start a new game.');
                 }
@@ -731,6 +756,9 @@
 
         playerXButton.addEventListener('click', () => init_board('X'));
         playerOButton.addEventListener('click', () => init_board('O'));
+        difficultyButtons.forEach((button) => {
+            button.addEventListener('click', () => init_board(gameState.player_who_move_first, button.dataset.difficulty));
+        });
         modalClose.addEventListener('click', () => init_board(gameState.player_who_move_first));
         modal.addEventListener('click', (event) => {
             if (event.target === modal) {
@@ -743,7 +771,7 @@
             }
         });
 
-        // By default, the AI moves first.
+        // By default, the AI moves first on Easy.
         init_board('X');
     </script>
 </body>

@@ -1,4 +1,5 @@
-from typing import List, Literal
+import random
+from typing import List, Literal, Tuple
 
 import numpy as np
 import uvicorn
@@ -26,6 +27,11 @@ agent2 = QLearningAgent(
 player_agent = 1
 player_human = 2
 
+Difficulty = Literal["easy", "medium", "hard"]
+
+# The chance that the AI plays a random empty square instead of its learned best move.
+RANDOM_MOVE_RATE = {"easy": 0.5, "medium": 0.2, "hard": 0.0}
+
 
 class GameState(BaseModel):
     """
@@ -35,6 +41,7 @@ class GameState(BaseModel):
     board: List[List[str]]
     player_who_move_first: Literal["X", "O"]  # "X" means AI.
     message: str
+    difficulty: Difficulty = "easy"
 
 
 class Item(BaseModel):
@@ -53,6 +60,7 @@ class NewGame(BaseModel):
     """
 
     player_who_move_first: Literal["X", "O"]  # "X" means AI.
+    difficulty: Difficulty = "easy"
 
 
 def board_to_game(board: List[List[str]]) -> TicTacToe:
@@ -110,6 +118,29 @@ def validate_board(state: GameState) -> None:
         raise HTTPException(status_code=400, detail="The game is already over.")
 
 
+def choose_agent_move(
+    agent: QLearningAgent, game: TicTacToe, difficulty: Difficulty
+) -> Tuple[int, int]:
+    """
+    Choose the AI's move for the given difficulty.
+
+    With probability RANDOM_MOVE_RATE[difficulty], the AI plays a random empty square; otherwise it plays the best
+    move from its Q-table. For example, on "easy" about half of the AI's moves are random, and on "hard" none are.
+
+    Args:
+        agent: The Q-learning agent that plays X.
+        game: The current game, with the AI to move.
+        difficulty: "easy", "medium" or "hard".
+
+    Returns:
+        The (row, column) of the AI's move.
+    """
+    valid_actions = game.get_valid_actions()
+    if random.random() < RANDOM_MOVE_RATE[difficulty]:
+        return random.choice(valid_actions)
+    return agent.choose_action(game.get_state_key(), valid_actions, is_learning=False)
+
+
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     """
@@ -129,11 +160,11 @@ async def new_game(new_game_request: NewGame) -> GameState:
     """
     Route to start a new game.
 
-    If the AI moves first, it makes its opening move here with its learned Q-table (which picks a corner),
-    instead of the page placing the first X at random.
+    If the AI moves first, it makes its opening move here, following the chosen difficulty,
+    instead of the page placing the first X itself.
 
     Args:
-        new_game_request: Who moves first, "X" (AI) or "O" (human).
+        new_game_request: Who moves first, "X" (AI) or "O" (human), and the difficulty.
 
     Returns:
         The state of the new game, including the AI's opening move if the AI moves first.
@@ -142,13 +173,11 @@ async def new_game(new_game_request: NewGame) -> GameState:
         board=[["", "", ""], ["", "", ""], ["", "", ""]],
         player_who_move_first=new_game_request.player_who_move_first,
         message="",
+        difficulty=new_game_request.difficulty,
     )
 
     if state.player_who_move_first == "X":
-        game = TicTacToe()
-        x, y = agent1.choose_action(
-            game.get_state_key(), game.get_valid_actions(), is_learning=False
-        )
+        x, y = choose_agent_move(agent1, TicTacToe(), state.difficulty)
         state.board[x][y] = "X"
 
     return state
@@ -192,13 +221,8 @@ async def make_move(item: Item) -> GameState:
         state.message = "It is a draw!"
         return state
 
-    agent_state_key: str = game.get_state_key()
-
-    # If you want the AI to lose sometimes, is_learning can be set to True.
-    # Otherwise, AI will not lose.
-    x, y = agent.choose_action(
-        agent_state_key, game.get_valid_actions(), is_learning=False
-    )
+    # On "easy" and "medium" the AI sometimes plays a random square, so it can lose.
+    x, y = choose_agent_move(agent, game, state.difficulty)
 
     state.board[x][y] = "X"
     game.make_move(x, y, player_agent)
