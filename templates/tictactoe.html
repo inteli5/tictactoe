@@ -504,8 +504,8 @@
             <div class="choose-row">
                 <div class="choose-label" id="firstLabel">Who goes first?</div>
                 <div class="choose-buttons" role="group" aria-labelledby="firstLabel">
-                    <button type="button" class="pill" id="playerO" aria-pressed="false">You (O) first</button>
-                    <button type="button" class="pill on" id="playerX" aria-pressed="true">AI (X) first</button>
+                    <button type="button" class="pill on" id="playerO" aria-pressed="true">You (O) first</button>
+                    <button type="button" class="pill" id="playerX" aria-pressed="false">AI (X) first</button>
                 </div>
             </div>
             <div class="choose-row">
@@ -563,7 +563,7 @@
 
         let gameState = {
             board: [['', '', ''], ['', '', ''], ['', '', '']],
-            player_who_move_first: 'X',
+            player_who_move_first: 'O',
             message: '',
             difficulty: 'easy',
         };
@@ -771,8 +771,8 @@
             }
         });
 
-        // By default, the AI moves first on Easy.
-        init_board('X');
+        // By default, you move first on Easy.
+        init_board('O');
     </script>
 </body>
 </html>

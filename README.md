@@ -29,7 +29,7 @@ uv run tictactoe_webapp.py
 ```
 After that, open a web browser and enter the URL 127.0.0.1:8000.
 You will always be 'O' and the AI will always be 'X'.
-By default, the AI moves first. However, you can click the button "You (O) first" to move first.
+By default, you move first. However, you can click the button "AI (X) first" to let the AI move first.
 You can also choose a difficulty. On "Easy" about half of the AI's moves are random, on "Medium" about one in five are random, and on "Hard" the AI always plays its best learned move. The page starts on "Easy", and changing the difficulty starts a new game.
 When a game ends, a popup shows the result. Click "Play again" or the board to start a new game.
 
